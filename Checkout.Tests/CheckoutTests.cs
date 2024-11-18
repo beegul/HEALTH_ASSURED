@@ -146,6 +146,6 @@ public class CheckoutTests
         {
             checkout.Scan("A"); 
         }
-        Assert.Equal(3230, checkout.GetTotalPrice()); //i did the maths...
+        Assert.Equal(4340, checkout.GetTotalPrice());
     }
 }

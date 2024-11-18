@@ -1,18 +1,9 @@
 ﻿namespace Checkout;
 
-public class Checkout : ICheckout
+public class Checkout(Dictionary<string, int> prices, Dictionary<string, SpecialPrice> specialOffers) : ICheckout
 {
-    private readonly Dictionary<string, int> prices;
-    private readonly Dictionary<string, SpecialPrice> specialOffers;
-    private readonly Dictionary<string, int> scannedItems;
+    private readonly Dictionary<string, int> scannedItems = new();
 
-    public Checkout(Dictionary<string, int> prices, Dictionary<string, SpecialPrice> specialOffers)
-    {
-        this.prices = prices;
-        this.specialOffers = specialOffers;
-        scannedItems = new Dictionary<string, int>();
-    }
-    
     public void Scan(string item)
     {
         item = item.ToUpperInvariant(); 
