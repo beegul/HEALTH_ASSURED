@@ -113,4 +113,39 @@ public class CheckoutTests
         
         Assert.Equal(250, checkout.GetTotalPrice());
     }
+    
+    [Fact]
+    public void SpecialOfferWithZeroQuantityThrowsException()
+    {
+        Assert.Throws<ArgumentException>(() => new SpecialPrice(0, 100));
+    }
+
+    [Fact]
+    public void SpecialOfferWithNegativeQuantityThrowsException()
+    {
+        Assert.Throws<ArgumentException>(() => new SpecialPrice(-1, 100));
+    }
+
+    [Fact]
+    public void SpecialOfferWithZeroPriceThrowsException()
+    {
+        Assert.Throws<ArgumentException>(() => new SpecialPrice(2, 0));
+    }
+
+    [Fact]
+    public void SpecialOfferWithNegativePriceThrowsException()
+    {
+        Assert.Throws<ArgumentException>(() => new SpecialPrice(2, -10));
+    }
+
+    [Fact]
+    public void LargeQuantityOfItemsWithSpecialOffer()
+    {
+        var checkout = new Checkout(prices, specialPrices);
+        for (var i = 0; i < 100; i++)
+        {
+            checkout.Scan("A"); 
+        }
+        Assert.Equal(3230, checkout.GetTotalPrice()); //i did the maths...
+    }
 }
