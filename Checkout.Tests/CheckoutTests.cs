@@ -102,7 +102,7 @@ public class CheckoutTests
     [Fact]
     public void MultipleSpecialOffersForSameItem()
     {
-        specialPrices.Add("A", new SpecialPrice(5, 200));
+        specialPrices["A"] = new SpecialPrice(5, 200); 
         var checkout = new Checkout(prices, specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");

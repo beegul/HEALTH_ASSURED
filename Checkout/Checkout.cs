@@ -15,6 +15,12 @@ public class Checkout : ICheckout
     
     public void Scan(string item)
     {
+        item = item.ToUpperInvariant(); 
+        if (!prices.ContainsKey(item))
+        {
+            throw new ArgumentException($"Invalid item: {item}");
+        }
+
         scannedItems.TryAdd(item, 0);
         scannedItems[item]++;
     }
@@ -22,15 +28,24 @@ public class Checkout : ICheckout
     public int GetTotalPrice()
     {
         var totalPrice = 0;
-
         foreach (var item in scannedItems)
         {
-            if (specialOffers.TryGetValue(item.Key, out var offer))
+            if (specialOffers.ContainsKey(item.Key))
             {
-                var offerCount = item.Value / offer.Quantity;
+                var offers = specialOffers
+                    .Where(offer => offer.Key == item.Key)
+                    .OrderByDescending(offer => offer.Value.Quantity)
+                    .ToList(); 
+                var remainingItems = item.Value;
                 
-                totalPrice += offerCount * offer.Price;
-                totalPrice += (item.Value % offer.Quantity) * prices[item.Key];
+                foreach (var offer in offers) 
+                {
+                    var offerCount = remainingItems / offer.Value.Quantity;
+                    totalPrice += offerCount * offer.Value.Price;
+                    remainingItems %= offer.Value.Quantity; 
+                }
+                
+                totalPrice += remainingItems * prices[item.Key]; 
             }
             else
             {
