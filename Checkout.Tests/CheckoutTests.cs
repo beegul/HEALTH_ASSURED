@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using Xunit;
 
@@ -81,5 +82,35 @@ public class CheckoutTests
         checkout.Scan("A");
         checkout.Scan("B");
         Assert.Equal(95, checkout.GetTotalPrice());
+    }
+    
+    [Fact]
+    public void InvalidItemThrowsException()
+    {
+        var checkout = new Checkout(prices, specialPrices);
+        Assert.Throws<ArgumentException>(() => checkout.Scan("E"));
+    }
+    
+    [Fact]
+    public void CaseInsensitiveItemScan()
+    {
+        var checkout = new Checkout(prices, specialPrices);
+        checkout.Scan("a");
+        Assert.Equal(50, checkout.GetTotalPrice());
+    }
+    
+    [Fact]
+    public void MultipleSpecialOffersForSameItem()
+    {
+        specialPrices.Add("A", new SpecialPrice(5, 200));
+        var checkout = new Checkout(prices, specialPrices);
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        
+        Assert.Equal(250, checkout.GetTotalPrice());
     }
 }
