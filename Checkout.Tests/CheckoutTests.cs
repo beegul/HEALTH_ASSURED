@@ -8,37 +8,30 @@ namespace Checkout.Tests;
 [TestSubject(typeof(Checkout))]
 public class CheckoutTests
 {
-    private readonly Dictionary<string, int> prices;
-    private readonly Dictionary<string, List<SpecialPrice>> specialPrices;
-
-    public CheckoutTests()
+    private readonly Dictionary<string, int> _prices = new()
     {
-        prices = new Dictionary<string, int>()
-        {
-            { "A", 50 },
-            { "B", 30 },
-            { "C", 20 },
-            { "D", 15 }
-        };
-
-        specialPrices = new Dictionary<string, List<SpecialPrice>>()
-        {
-            { "A", [new SpecialPrice(3, 130)] },
-            { "B", [new SpecialPrice(2, 45)] }
-        };
-    }
+        { "A", 50 },
+        { "B", 30 },
+        { "C", 20 },
+        { "D", 15 }
+    };
+    private readonly Dictionary<string, List<SpecialPrice>> _specialPrices = new()
+    {
+        { "A", [new SpecialPrice(3, 130)] },
+        { "B", [new SpecialPrice(2, 45)] }
+    };
 
     [Fact]
     public void EmptyBasketReturnsZero()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         Assert.Equal(0, checkout.GetTotalPrice());
     }
 
     [Fact]
     public void SingleItemReturnsCorrectPrice()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         Assert.Equal(50, checkout.GetTotalPrice());
     }
@@ -46,7 +39,7 @@ public class CheckoutTests
     [Fact]
     public void TwoDifferentItemsReturnCorrectPrice()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         checkout.Scan("B");
         Assert.Equal(80, checkout.GetTotalPrice());
@@ -55,7 +48,7 @@ public class CheckoutTests
     [Fact]
     public void MultipleItemsWithSpecialPriceReturnCorrectPrice()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");
         checkout.Scan("A");
@@ -65,7 +58,7 @@ public class CheckoutTests
     [Fact]
     public void MultipleItemsWithAndWithoutSpecialPriceReturnCorrectPrice()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");
         checkout.Scan("A");
@@ -77,7 +70,7 @@ public class CheckoutTests
     [Fact]
     public void ItemsInAnyOrderWithSpecialPriceReturnCorrectPrice()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("B");
         checkout.Scan("A");
         checkout.Scan("B");
@@ -87,14 +80,14 @@ public class CheckoutTests
     [Fact]
     public void InvalidItemThrowsException()
     {
-        var checkout = new Checkout(prices, specialPrices);
-        Assert.Throws<ArgumentException>(() => checkout.Scan("E"));
+        var checkout = new Checkout(_prices, _specialPrices);
+        Assert.Throws<InvalidItemException>(() => checkout.Scan("E"));
     }
     
     [Fact]
     public void CaseInsensitiveItemScan()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("a");
         Assert.Equal(50, checkout.GetTotalPrice());
     }
@@ -102,12 +95,12 @@ public class CheckoutTests
     [Fact]
     public void MultipleSpecialOffersForSameItem()
     {
-        specialPrices["A"] = new List<SpecialPrice>
+        _specialPrices["A"] = new List<SpecialPrice>
         {
             new(3, 130),
             new(6, 250)
         };
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");
         checkout.Scan("A");
@@ -145,7 +138,7 @@ public class CheckoutTests
     [Fact]
     public void LargeQuantityOfItemsWithSpecialOffer()
     {
-        var checkout = new Checkout(prices, specialPrices);
+        var checkout = new Checkout(_prices, _specialPrices);
         for (var i = 0; i < 100; i++)
         {
             checkout.Scan("A"); 
@@ -156,9 +149,9 @@ public class CheckoutTests
     [Fact]
     public void SameQuantitySpecialOffersForSameItem()
     {
-        specialPrices["A"].Add(new SpecialPrice(3, 120)); 
-        specialPrices["A"].Add(new SpecialPrice(3, 130));
-        var checkout = new Checkout(prices, specialPrices);
+        _specialPrices["A"].Add(new SpecialPrice(3, 120)); 
+        _specialPrices["A"].Add(new SpecialPrice(3, 130));
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");
         checkout.Scan("A");
@@ -170,8 +163,8 @@ public class CheckoutTests
     [Fact]
     public void SpecialOfferSlightlyBetterThanUnitPrice()
     {
-        specialPrices["B"].Add(new SpecialPrice(2, 39));
-        var checkout = new Checkout(prices, specialPrices);
+        _specialPrices["B"].Add(new SpecialPrice(2, 39));
+        var checkout = new Checkout(_prices, _specialPrices);
         checkout.Scan("B");
         checkout.Scan("B");
         checkout.Scan("B");
