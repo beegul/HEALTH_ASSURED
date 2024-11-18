@@ -1,6 +1,6 @@
 ﻿namespace Checkout;
 
-public class Checkout(Dictionary<string, int> prices, Dictionary<string, SpecialPrice> specialOffers) : ICheckout
+public class Checkout(Dictionary<string, int> prices, Dictionary<string, List<SpecialPrice>> specialPrices) : ICheckout
 {
     private readonly Dictionary<string, int> scannedItems = new();
 
@@ -21,19 +21,19 @@ public class Checkout(Dictionary<string, int> prices, Dictionary<string, Special
         var totalPrice = 0;
         foreach (var item in scannedItems)
         {
-            if (specialOffers.ContainsKey(item.Key))
+            if (specialPrices.TryGetValue(item.Key, out var price))
             {
-                var offers = specialOffers
-                    .Where(offer => offer.Key == item.Key)
-                    .OrderByDescending(offer => offer.Value.Quantity)
+                var offers = price
+                    .OrderByDescending(offer => offer.Quantity)
+                    .ThenBy(offer => offer.Price)
                     .ToList(); 
                 var remainingItems = item.Value;
                 
-                foreach (var offer in offers) 
+                foreach (var offer in offers)
                 {
-                    var offerCount = remainingItems / offer.Value.Quantity;
-                    totalPrice += offerCount * offer.Value.Price;
-                    remainingItems %= offer.Value.Quantity; 
+                    var offerCount = remainingItems / offer.Quantity;
+                    totalPrice += offerCount * offer.Price;
+                    remainingItems %= offer.Quantity; 
                 }
                 
                 totalPrice += remainingItems * prices[item.Key]; 

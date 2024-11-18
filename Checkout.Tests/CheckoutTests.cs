@@ -9,7 +9,7 @@ namespace Checkout.Tests;
 public class CheckoutTests
 {
     private readonly Dictionary<string, int> prices;
-    private readonly Dictionary<string, SpecialPrice> specialPrices;
+    private readonly Dictionary<string, List<SpecialPrice>> specialPrices;
 
     public CheckoutTests()
     {
@@ -21,10 +21,10 @@ public class CheckoutTests
             { "D", 15 }
         };
 
-        specialPrices = new Dictionary<string, SpecialPrice>()
+        specialPrices = new Dictionary<string, List<SpecialPrice>>()
         {
-            { "A", new SpecialPrice(3, 130) },
-            { "B", new SpecialPrice(2, 45) }
+            { "A", [new SpecialPrice(3, 130)] },
+            { "B", [new SpecialPrice(2, 45)] }
         };
     }
 
@@ -102,7 +102,11 @@ public class CheckoutTests
     [Fact]
     public void MultipleSpecialOffersForSameItem()
     {
-        specialPrices["A"] = new SpecialPrice(5, 200); 
+        specialPrices["A"] = new List<SpecialPrice>
+        {
+            new(3, 130),
+            new(6, 250)
+        };
         var checkout = new Checkout(prices, specialPrices);
         checkout.Scan("A");
         checkout.Scan("A");
@@ -147,5 +151,32 @@ public class CheckoutTests
             checkout.Scan("A"); 
         }
         Assert.Equal(4340, checkout.GetTotalPrice());
+    }
+
+    [Fact]
+    public void SameQuantitySpecialOffersForSameItem()
+    {
+        specialPrices["A"].Add(new SpecialPrice(3, 120)); 
+        specialPrices["A"].Add(new SpecialPrice(3, 130));
+        var checkout = new Checkout(prices, specialPrices);
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+
+        Assert.Equal(170, checkout.GetTotalPrice());
+    }
+
+    [Fact]
+    public void SpecialOfferSlightlyBetterThanUnitPrice()
+    {
+        specialPrices["B"].Add(new SpecialPrice(2, 39));
+        var checkout = new Checkout(prices, specialPrices);
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+
+        Assert.Equal(78, checkout.GetTotalPrice());
     }
 }
